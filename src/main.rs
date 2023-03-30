@@ -7,11 +7,11 @@ use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
 use logs::*;
 use once_cell::sync::Lazy;
 use std::convert::Infallible;
-use std::net::{Ipv4Addr, SocketAddr};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 
-// HTTP client
+// HTTP Client
 static CLIENT: Lazy<Client<HttpsConnector<HttpConnector>>> = Lazy::new(|| {
     let https = HttpsConnectorBuilder::new()
         .with_native_roots()
@@ -25,9 +25,9 @@ static CLIENT: Lazy<Client<HttpsConnector<HttpConnector>>> = Lazy::new(|| {
 /// A simple CORS proxy tool
 #[derive(Parser)]
 struct Args {
-    /// Bind port
-    #[clap(short, long, default_value_t = 1080)]
-    port: u16,
+    /// Bind address [IP | Port | IP:PORT]
+    #[clap(short, long, value_parser(to_socket_addr))]
+    bind: Option<SocketAddr>,
 }
 
 #[tokio::main]
@@ -37,9 +37,7 @@ async fn main() {
         .target(env!("CARGO_PKG_NAME"))
         .init();
 
-    let args = Args::parse();
-
-    let addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, args.port));
+    let addr = Args::parse().bind.unwrap_or_else(default_addr);
 
     info!("Serving address: {}", &addr);
 
@@ -112,4 +110,25 @@ async fn proxy(mut req: Request<Body>) -> Result<Response<Body>, Infallible> {
     info!("Request: {} [{}]", &uri, res.status());
 
     Ok(res)
+}
+
+fn default_addr() -> SocketAddr {
+    SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 1080)
+}
+
+fn to_socket_addr(s: &str) -> Result<SocketAddr, String> {
+    // IP + Port
+    if let Ok(addr) = s.parse::<SocketAddr>() {
+        return Ok(addr);
+    }
+    // IP
+    if let Ok(ip) = s.parse::<IpAddr>() {
+        return Ok(SocketAddr::new(ip, default_addr().port()));
+    }
+    // Port
+    if let Ok(port) = s.parse::<u16>() {
+        return Ok(SocketAddr::new(default_addr().ip(), port));
+    }
+
+    Err(format!("Cannot parse `{}` to SocketAddr", s))
 }

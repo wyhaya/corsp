@@ -1,6 +1,6 @@
 [package]
 name = "corsp"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "A simple CORS proxy tool"
 repository = "https://github.com/wyhaya/corsp"
@@ -12,11 +12,11 @@ codegen-units = 1
 strip = true
 
 [dependencies]
-tokio = { version = "1.21.0", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1.27.0", features = ["rt-multi-thread", "macros"] }
 tower = { version = "0.4.13", features = ["util"] }
-tower-http = { version = "0.3.4", features = ["cors"] }
-hyper = { version = "0.14.20", features = ["http1", "http2", "client", "server", "tcp"] }
-hyper-rustls = { version = "0.23.0", features = ["http1", "http2", "native-tokio", "tls12"] }
-logs = { version = "0.6.2" }
-once_cell = { version = "1.14.0" }
-clap = { version = "3.2.20", features = ["derive"] }
+tower-http = { version = "0.4.0", features = ["cors"] }
+hyper = { version = "0.14.25", features = ["http1", "http2", "client", "server", "tcp"] }
+hyper-rustls = { version = "0.23.2", features = ["http1", "http2", "native-tokio", "tls12"] }
+logs = { version = "0.7.1" }
+once_cell = { version = "1.17.1" }
+clap = { version = "4.2.1", features = ["derive"] }

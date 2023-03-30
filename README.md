@@ -8,7 +8,7 @@
 ### Start
 
 ```sh
-corsp 1080
+corsp -b 1080
 # [INFO ] Serving address: 0.0.0.0:1080
 ```
 
